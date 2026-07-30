@@ -1,0 +1,6 @@
+packages:
+  - "."
+
+allowBuilds:
+  # VitePress 依赖 esbuild 的平台二进制，放行后安装与构建才能在新版本 pnpm 中非交互完成。
+  esbuild: true
