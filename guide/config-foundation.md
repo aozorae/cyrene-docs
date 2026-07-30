@@ -4,7 +4,7 @@
 
 进入后，通过顶部子菜单切换“站点配置”“个人资料”“公告”和“背景壁纸”。这些设置决定站点身份和首页第一印象。
 
-## 站点配置
+## 站点配置 {#site-config}
 
 **入口：后台 → 基础配置 → 站点配置**  
 **手动配置对象：`siteConfig`**
@@ -15,10 +15,10 @@
 | --- | --- |
 | 标题 | 浏览器标题、页面标题和站点品牌名称 |
 | 副标题 | 对站点名称的简短补充 |
-| 正式地址 | 站点线上 URL，用于 RSS、Sitemap 和分享信息 |
+| 正式地址 | 博客对外访问的完整 URL，例如 `https://blog.example.com`；不要填后台地址 |
 | 描述 | 搜索摘要和站点介绍 |
 | 关键词 | 用于描述站点主题的关键词列表 |
-| 开始日期 | 用于计算站点运行天数 |
+| 开始日期 | 用于计算站点运行天数，建议使用 `YYYY-MM-DD` |
 | 时区 | IANA 时区，例如 `Asia/Shanghai` 或 `UTC` |
 
 语言字段在后台中只读。手动配置时修改 `SITE_LANG`，常用值包括 `zh_CN`、`zh_TW`、`en`、`ja`、`ru` 和 `ko`。
@@ -31,14 +31,16 @@
 - **卡片边框与阴影**：增强内容块层次，但卡片较多时也会增加视觉密度。
 - **卡片跟随主题色**：让卡片细节随主题色色相变化。
 
+页面宽度是内容区的最大宽度，不是浏览器窗口宽度。数值过小会让双侧栏拥挤，数值过大则会拉长正文行宽；修改后应同时检查首页、文章页和平板宽度。
+
 ### Favicon
 
 每个图标项目可以设置：
 
 | 字段 | 说明 |
 | --- | --- |
-| `src` | 图标地址 |
-| `theme` | 可选，限制为亮色或暗色模式 |
+| `src` | 图标地址，可以是 `/assets/...` 站内地址或完整网络 URL |
+| `theme` | 可选，`light` 仅在亮色模式使用，`dark` 仅在暗色模式使用 |
 | `sizes` | 可选，例如 `32x32`、`192x192` |
 
 若启用 OpenGraph 图片生成，建议至少保留一个 PNG 图标。
@@ -52,6 +54,8 @@ Logo 支持：
 - `icon`：Iconify 图标名。
 - `image`：本地图片，可额外设置暗色版本。
 - `url`：网络图片，可额外设置暗色版本。
+
+选择 `icon` 时填写 Iconify 名称，例如 `material-symbols:flare`；选择 `image` 时使用站内公开地址；选择 `url` 时必须填写浏览器能直接访问的完整 URL。类型和值不匹配时，Logo 会显示为空或加载失败。
 
 还可以控制导航栏是否全宽、菜单左对齐或居中、品牌是否跟随主题色、导航栏是否固定在顶部。
 
@@ -93,7 +97,7 @@ Logo 支持：
 
 - **Bangumi 用户 ID**与数据模式：`static` 在构建时获取，`dynamic` 在浏览器中实时获取。
 - **Bangumi API 与详情地址**。
-- **分类顺序**：`anime`、`book`、`music`、`game`。
+- **分类顺序**：`anime`、`book`、`music`、`game`、`real`。
 - **Bilibili UID**和可选 TMDB 配置。
 - **每页文章数**：建议根据卡片高度和首屏密度调整。
 
@@ -109,7 +113,26 @@ Logo 支持：
 
 只有由 Astro 管理的图片才能参与完整优化；图片越多，构建时间越长。
 
-## 个人资料
+### 前台显示开关（仅手动配置）
+
+这组开关决定访客能否在博客的显示设置面板中自行切换某项外观，不会改变该功能的默认值。当前后台尚未提供这个入口，需要手动配置 `displaySettingsConfig`。
+
+| 开关 | 访客可以调整的内容 |
+| --- | --- |
+| `themeColorSwitchable` | 主题色色相 |
+| `layoutSwitchable` | 文章列表的列表或网格布局 |
+| `cardBorderSwitchable` | 卡片边框与阴影 |
+| `cardFollowThemeSwitchable` | 卡片是否跟随主题色 |
+| `wallpaperModeSwitchable` | 壁纸模式 |
+| `wavesSwitchable` / `gradientSwitchable` | 水波纹和底部渐变 |
+| `bannerTitleSwitchable` | 横幅标题显示 |
+| `bannerCarouselSwitchable` | 壁纸轮播 |
+| `overlaySwitchable` | 覆盖模式的透明度、模糊度和卡片透明度；可以整体关闭，也可以逐项控制 |
+| `sakuraSwitchable` | 樱花特效 |
+
+将某项设为 `false` 只会隐藏访客端控制，不会自动关闭对应功能。
+
+## 个人资料 {#profile}
 
 **入口：后台 → 基础配置 → 个人资料**  
 **手动配置对象：`profileConfig`**
@@ -139,7 +162,7 @@ export const profileConfig = {
 };
 ```
 
-## 公告
+## 公告 {#announcement}
 
 **入口：后台 → 基础配置 → 公告**  
 **手动配置对象：`announcementConfig`**
@@ -154,7 +177,7 @@ export const profileConfig = {
 
 要真正看到公告，还需要在“基础组件 → 侧边栏与组件”中启用 `announcement` 组件。
 
-## 背景壁纸
+## 背景壁纸 {#background-wallpaper}
 
 **入口：后台 → 基础配置 → 背景壁纸**  
 **手动配置对象：`backgroundWallpaper`**
@@ -176,6 +199,8 @@ export const profileConfig = {
 - 多张图片在未开启轮播时，每次刷新随机选择一张。
 - 视频地址可以是一条或多条，多条支持顺序或随机切换。
 - 网络图片和公开资源不会经过 Astro 优化，应提前压缩体积。
+- **视频背景开关**控制是否读取视频列表；列表为空时仍使用图片。
+- 桌面与移动图片都建议至少保留一张，避免某类设备没有可显示资源。
 
 ```ts
 src: {
@@ -192,10 +217,12 @@ src: {
 | 遮罩暗度 | `0` 到 `1`，数值越大文字越清晰、图片越暗 |
 | 视频模式 | `order` 顺序播放，`random` 随机播放 |
 | 横幅标题 | 控制标题、副标题和字号 |
-| 打字机 | 控制输入、删除和停顿时间 |
+| 打字机 | `speed` 是输入一个字符的间隔，`deleteSpeed` 是删除一个字符的间隔，`pauseTime` 是完整句子的停留时间；单位均为毫秒 |
 | 文章横幅信息 | `description` 显示摘要，`meta` 显示日期、字数和阅读时间 |
 | 导航透明模式 | `semi`、`full` 或 `semifull` |
 | 毛玻璃 | 可设置开关和模糊度，较高模糊会增加渲染开销 |
+
+当前默认的打字机速度为输入 `100ms`、删除 `50ms`、整句停留 `2000ms`。一般不建议把输入或删除间隔设到 `30ms` 以下，否则文字变化会显得急促；关闭打字机后，副标题数组仍会作为普通文字来源。
 
 ### 水波纹、渐变与轮播
 
@@ -205,14 +232,33 @@ src: {
 - 轮播间隔单位为毫秒；过短会影响阅读稳定性。
 - 过渡效果支持 `fade`、`zoom`、`slide` 和 `kenburns`。
 
+当前轮播间隔为 `5000ms`。建议从 `5000` 到 `10000` 开始调整；只有一张图片时，开启轮播也不会产生可见切换。
+
 ### 模式专属参数
 
-- `banner.position`：图片裁切位置，常用 `center`、`top`、`bottom`。
-- `fullscreen.position`：全屏壁纸的图片位置。
-- `overlay.zIndex`：背景层级。
-- `overlay.opacity`：壁纸透明度。
-- `overlay.blur`：背景模糊度。
-- `overlay.cardOpacity`：卡片透明度，越小越透明。
+- `banner.position`：使用 CSS 背景定位写法，例如 `center`、`top` 或 `0% 20%`。第一个值控制水平位置，第二个值控制垂直位置。
+- `fullscreen.position`：全屏壁纸的图片定位，通常先使用 `center`。
+- `overlay.zIndex`：背景层级，通常保持负值，让壁纸位于正文之后。
+- `overlay.opacity`：壁纸不透明度，范围 `0` 到 `1`；越小越透明。
+- `overlay.blur`：背景模糊半径，数值按像素使用；越大越模糊，也越耗费渲染性能。
+- `overlay.cardOpacity`：正文卡片不透明度，范围 `0` 到 `1`；越小越能看到背后的壁纸。
+- `gradient.height`：渐变衔接区域高度，支持 `10%`、`8rem` 等 CSS 尺寸。
+
+一份便于开始调整的配置如下：
+
+```ts
+common: {
+  dimOpacity: 0.2,
+  homeText: {
+    enable: true,
+    title: "站点标题",
+    subtitle: ["第一句副标题", "第二句副标题"],
+    typewriter: { enable: true, speed: 100, deleteSpeed: 50, pauseTime: 2000 },
+  },
+  carousel: { enable: false, interval: 5000, transitionEffect: "fade" },
+},
+banner: { position: "0% 20%" },
+overlay: { zIndex: -1, opacity: 0.8, blur: 10, cardOpacity: 0.5 },
+```
 
 建议一次只调整一个透明度或模糊参数，并同时检查亮色、暗色、桌面和移动端。
-

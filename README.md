@@ -2,6 +2,8 @@
 
 Cyrene 博客与管理后台的中文文档站，内容按后台真实入口组织。
 
+在线文档：[cyrene-docs.vercel.app](https://cyrene-docs.vercel.app)
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/aozorae/cyrene-docs)
 
 ```bash

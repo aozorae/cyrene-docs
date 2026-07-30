@@ -4,7 +4,7 @@
 
 这一组包含八个子菜单：字体、代码块、文章封面、音乐播放器、评论系统、统计分析、Mermaid 图表和 PlantUML 图表。
 
-## 字体
+## 字体 {#font}
 
 **入口：后台 → 功能配置 → 字体**  
 **手动配置对象：`fontsList`、`fontConfig`**
@@ -25,6 +25,32 @@
 
 本地字体需要为每个变体填写字体资源地址。远程 Provider 会在构建阶段下载并缓存字体，修改后通常需要重新启动开发服务器。
 
+Provider 决定“字体从哪里来”，名称则必须与对应服务中的字体名称一致。远程服务不可访问或字体名称写错时，构建可能失败；面向中国大陆访问时，应特别留意 Google Fonts 的可用性。
+
+本地字体的每个变体可以设置：
+
+| 字段 | 说明 |
+| --- | --- |
+| `src` | 一个或多个字体文件地址；优先使用 WOFF2，也可使用 TTF 或 OTF |
+| `weight` | 该文件对应的字重，例如 `400` 或 `700` |
+| `style` | `normal`、`italic` 或 `oblique` |
+
+```ts
+{
+  name: "My Local Font",
+  cssVariable: "--font-my-local",
+  provider: "local",
+  options: {
+    variants: [
+      { src: ["./public/assets/fonts/my-local.woff2"], weight: "400", style: "normal" },
+    ],
+  },
+  fallbacks: ["sans-serif"],
+}
+```
+
+同一个 CSS 变量不能重复定义。页面选择中引用的变量也必须出现在字体列表里，否则浏览器只能使用回退字体。
+
 ### 字体选择
 
 - **启用自定义字体**：总开关。
@@ -32,6 +58,8 @@
 - **横幅主标题字体**、**横幅副标题字体**、**导航标题字体**：留空时跟随全局字体。
 - **代码字体**：建议使用等宽字体。
 - **本地字体子集化**：构建时扫描站点字符并生成较小的 WOFF2 文件。
+
+`subsetFonts.extraChars` 用来强制保留扫描阶段不一定能发现的字符，例如通过脚本动态生成的图标文字、名字或特殊符号。只填写确实需要的字符；内容越多，生成的字体文件越大。
 
 ```ts
 export const fontConfig = {
@@ -48,7 +76,7 @@ export const fontConfig = {
 中文字体文件通常较大。优先使用系统中文字体，或启用本地字体子集化；不要一次加载大量字重和字形。
 :::
 
-## 代码块
+## 代码块 {#code-block}
 
 **入口：后台 → 功能配置 → 代码块**  
 **手动配置对象：`expressiveCodeConfig`**
@@ -68,7 +96,9 @@ export const fontConfig = {
 | Logo 颜色 | `mono`、`original`、`theme` 或自定义颜色 |
 | 排除语言 | 指定不显示 Logo 的语言列表 |
 
-## 文章封面
+“行数阈值”决定何时出现折叠能力，“预览行数”决定折叠后保留多少行。预览行数应小于行数阈值；例如阈值 `30`、预览 `12`，表示超过 30 行的代码可以先显示前 12 行。
+
+## 文章封面 {#cover-image}
 
 **入口：后台 → 功能配置 → 文章封面**  
 **手动配置对象：`coverImageConfig`**
@@ -81,7 +111,7 @@ export const fontConfig = {
 
 随机图片接口会影响构建稳定性和页面一致性，建议至少准备一个稳定的备用服务，并确认接口允许你的使用方式。
 
-## 音乐播放器
+## 音乐播放器 {#music-player}
 
 **入口：后台 → 功能配置 → 音乐播放器**  
 **手动配置对象：`musicPlayerConfig`**
@@ -103,6 +133,10 @@ export const fontConfig = {
 - 平台支持网易云、QQ 音乐、酷狗等服务，取决于 API 实现。
 - 类型可选择单曲、歌单、专辑、搜索或艺术家。
 - 备用 API 会在主服务失败时依次尝试。
+- `id` 的含义由 `type` 决定：歌单模式填歌单 ID，单曲模式填歌曲 ID，搜索模式通常填关键词。
+- `auth` 只在你使用的 Meting 服务明确要求认证参数时填写；前端配置会公开给访问者，不能把真正的私密令牌放在这里。
+
+备用 API 按数组顺序请求，因此把最稳定、响应最快的服务放在前面。所有服务都失败时，播放器无法取得在线曲目；它不会自动切换到本地播放列表。
 
 不要在会被浏览器或公开仓库读取的配置中放入真正的私密凭据。
 
@@ -122,7 +156,7 @@ playlist: [
 ]
 ```
 
-## 评论系统
+## 评论系统 {#comments}
 
 **入口：后台 → 功能配置 → 评论系统**  
 **手动配置对象：`commentConfig`**
@@ -157,6 +191,26 @@ Giscus 基于 GitHub Discussions。需要填写仓库、仓库 ID、分类、分
 - `inputPosition` 可选顶部或底部。
 - `loading` 建议使用 `lazy`。
 
+仓库必须公开、已启用 Discussions，并安装 Giscus 应用。`repoId` 和 `categoryId` 不是仓库名称或分类名称，可以在 [Giscus 配置页](https://giscus.app/zh-CN) 选择仓库和分类后取得。
+
+```ts
+giscus: {
+  repo: "owner/repository",
+  repoId: "R_...",
+  category: "Announcements",
+  categoryId: "DIC_...",
+  mapping: "pathname",
+  strict: "0",
+  reactionsEnabled: "1",
+  emitMetadata: "0",
+  inputPosition: "bottom",
+  lang: "zh-CN",
+  loading: "lazy",
+}
+```
+
+`strict`、`reactionsEnabled` 和 `emitMetadata` 使用字符串 `"1"` 或 `"0"`，不是布尔值。通常推荐 `mapping: "pathname"`，因为标题修改后仍能关联原讨论；如果博客路径会频繁变化，则需要提前规划映射方式。
+
 ### Disqus
 
 填写站点的 `shortname`。确认站点域名与 Disqus 后台设置一致。
@@ -169,7 +223,7 @@ Giscus 基于 GitHub Discussions。需要填写仓库、仓库 ID、分类、分
 全局启用评论后，动态页、友链页、打赏页和单篇文章仍可以单独关闭评论。
 :::
 
-## 统计分析
+## 统计分析 {#analytics}
 
 **入口：后台 → 功能配置 → 统计分析**  
 **手动配置对象：`analyticsConfig`**
@@ -179,6 +233,19 @@ Giscus 基于 GitHub Discussions。需要填写仓库、仓库 ID、分类、分
 - Google Analytics：填写 Measurement ID。
 - Microsoft Clarity：填写 Project ID。
 - 51.la：填写统计 ID，可选自定义 SDK、数据分离标识、事件分析和录屏。
+
+没有使用某项统计服务时，将它的 ID 留空。不要拿示例 ID 上线，否则访问数据可能进入他人的统计项目。
+
+51.la 的字段含义：
+
+| 字段 | 说明 |
+| --- | --- |
+| `Id` | 51.la 控制台生成的统计 ID；这是启用该服务的核心标识 |
+| `sdkUrl` | 自定义 SDK 地址；留空时使用服务默认地址，只有需要自建代理或替换 CDN 时才填写 |
+| `ck` | 多个统计 ID 共存时的数据分离标识；只有一个 ID 时通常留空 |
+| `autoTrack` | 自动记录常见交互事件，会增加收集的数据范围 |
+| `hashMode` | 仅 Hash 路由站点需要；Cyrene 使用 History API，通常保持关闭 |
+| `screenRecord` | 允许第三方记录访客会话，隐私与流量开销都高于普通访问统计 |
 
 ### Umami
 
@@ -196,7 +263,9 @@ Giscus 基于 GitHub Discussions。需要填写仓库、仓库 ID、分类、分
 
 启用统计、会话回放或录屏前，请确认当地隐私规则，并在站点隐私说明中如实告知读者。
 
-## Mermaid 图表
+`sampleRate: 0.15` 表示大约录制 15% 的会话；`maxDuration: 300000` 表示单次最多 5 分钟。即使启用了严格遮罩，也应使用 `blockSelector` 排除登录、评论、支付等敏感区域，并在上线前亲自检查回放内容。
+
+## Mermaid 图表 {#mermaid}
 
 **入口：后台 → 功能配置 → Mermaid 图表**  
 **手动配置对象：`mermaidConfig`**
@@ -216,7 +285,7 @@ sequenceDiagram
 ```
 ````
 
-## PlantUML 图表
+## PlantUML 图表 {#plantuml}
 
 **入口：后台 → 功能配置 → PlantUML 图表**  
 **手动配置对象：`plantumlConfig`**
@@ -229,4 +298,3 @@ sequenceDiagram
 | 暗色主题 | 可使用 `cyborg` 等 PlantUML 主题 |
 
 使用公共 PlantUML 服务器意味着图表源码可能会发送到第三方服务。包含内部架构、账号或业务机密时，应使用自建服务器。
-

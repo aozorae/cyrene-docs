@@ -4,7 +4,7 @@
 
 这里管理导航栏菜单预设、侧边栏布局和组件清单。站点 Logo 与导航标题位于“基础配置 → 站点配置”。
 
-## 导航栏
+## 导航栏 {#navbar}
 
 **入口：后台 → 基础组件 → 导航栏**  
 **手动配置对象：`navBarSearchConfig`、`LinkPresets`、`navBarConfig`**
@@ -50,7 +50,7 @@ Archive: {
 先修改 `LinkPresets` 中的通用页面名称和图标；只有需要改变分组、顺序或添加特殊链接时，才调整 `navBarConfig`。
 :::
 
-## 侧边栏与组件
+## 侧边栏与组件 {#sidebar}
 
 **入口：后台 → 基础组件 → 侧边栏与组件**  
 **手动配置对象：`sidebarLayoutConfig`**
@@ -85,6 +85,16 @@ Archive: {
 | `hideOnNonPostPage` | 是否只在文章详情页显示 |
 | `specificConfig` | 当前组件的专属设置 |
 
+`showOnPostPage` 和 `hideOnNonPostPage` 很容易混淆：
+
+| 目标 | 推荐设置 |
+| --- | --- |
+| 所有页面都显示 | `showOnPostPage: true`，`hideOnNonPostPage: false` |
+| 只在首页等非文章页显示 | `showOnPostPage: false` |
+| 只在文章详情页显示 | `showOnPostPage: true`，`hideOnNonPostPage: true` |
+
+`enable: false` 的优先级最高，关闭后其余显示条件都不会让组件出现。
+
 ### 可用组件
 
 | 类型 | 用途 | 常用专属设置 |
@@ -100,6 +110,45 @@ Archive: {
 | `calendar` | 日历与年度热力图 | 是否显示热力图 |
 | `sidebarToc` | 文章目录 | 通常只在文章页显示 |
 | `advertisement` | 图片或文字内容块 | 内容、链接、关闭开关、显示次数、内边距 |
+
+### 专属设置怎么填
+
+- `collapseThreshold`：分类或标签数量超过这个值后自动折叠。它控制初始展示密度，不会删除内容。
+- `dynamic.limit`：侧边栏最多显示几条最新动态，与动态页面的每页数量互不影响。
+- `siteInfo.unknownBuildPlatform`：无法识别部署平台时显示的替代文字。
+- `calendar.showHeatmap`：是否在日历组件下显示年度文章热力图。
+- 音乐组件需要同时在“功能配置 → 音乐播放器”开启侧边栏显示，否则组件位置存在也不会播放音乐。
+
+### 广告栏的两种内容
+
+图片广告使用 `image`，文字公告使用 `title`、`content` 和 `link`。两种形式都可以设置：
+
+| 字段 | 含义 |
+| --- | --- |
+| `closable` | 是否显示关闭按钮 |
+| `displayCount` | `-1` 表示不限次数；正数表示同一浏览器最多展示的次数，计数保存在浏览器本地 |
+| `external` | `true` 作为外部链接打开，站内地址通常使用 `false` |
+| `padding.all` | 为四边设置同一内边距，例如 `1rem`；也可分别使用 `top`、`right`、`bottom`、`left` |
+| `expireDate` | 可选的过期时间，使用 ISO 8601 日期时间；当前后台未提供该字段，需要手动配置 |
+
+```ts
+// 图片内容块
+specificConfig: {
+  ad: {
+    image: {
+      src: "/assets/images/ad/banner.webp",
+      alt: "内容说明",
+      link: "/about/",
+      external: false,
+    },
+    closable: true,
+    displayCount: 3,
+    padding: { all: "1rem" },
+  },
+}
+```
+
+`alt` 应说明图片内容，而不是填写“图片”或文件名。若同一个项目同时填写图片和文字字段，实际呈现会更难预测，建议一个项目只选一种内容形式。
 
 ### 常见布局
 
@@ -128,4 +177,3 @@ export const sidebarLayoutConfig = {
 ::: warning 组件开关需要互相配合
 把音乐、公告或动态组件加入侧边栏，并不会自动完成对应功能配置。请同时确认“功能配置 → 音乐播放器”“基础配置 → 公告”或“页面 → 动态”已经设置。
 :::
-
