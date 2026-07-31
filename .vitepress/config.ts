@@ -39,6 +39,13 @@ export default defineConfig({
     sidebar: {
       "/guide/": [
         {
+          text: "快速开始",
+          items: [
+            { text: "部署前端", link: "/guide/deploy-blog" },
+            { text: "部署后台", link: "/guide/deploy-admin" },
+          ],
+        },
+        {
           text: "开始使用",
           items: [
             { text: "认识管理后台", link: "/guide/admin-overview" },
@@ -61,13 +68,6 @@ export default defineConfig({
             { text: "本地开发与手动部署", link: "/guide/getting-started" },
             { text: "手动配置与高级字段", link: "/guide/manual-configuration" },
             { text: "常见问题", link: "/guide/troubleshooting" },
-          ],
-        },
-        {
-          text: "快速开始",
-          items: [
-            { text: "部署前端", link: "/guide/deploy-blog" },
-            { text: "部署后台", link: "/guide/deploy-admin" },
           ],
         },
       ],
