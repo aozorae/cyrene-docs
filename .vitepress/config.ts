@@ -16,7 +16,13 @@ export default defineConfig({
     siteTitle: "Cyrene 文档",
     nav: [
       { text: "首页", link: "/" },
-      { text: "快速开始", link: "/guide/getting-started" },
+      {
+        text: "快速开始",
+        items: [
+          { text: "部署前端", link: "/guide/deploy-blog" },
+          { text: "部署后台", link: "/guide/deploy-admin" },
+        ],
+      },
       { text: "后台使用", link: "/guide/admin-overview" },
       {
         text: "配置指南",
@@ -35,7 +41,6 @@ export default defineConfig({
         {
           text: "开始使用",
           items: [
-            { text: "快速开始", link: "/guide/getting-started" },
             { text: "认识管理后台", link: "/guide/admin-overview" },
             { text: "发布文章与动态", link: "/guide/content-publishing" },
           ],
@@ -53,9 +58,16 @@ export default defineConfig({
         {
           text: "进阶",
           items: [
+            { text: "本地开发与手动部署", link: "/guide/getting-started" },
             { text: "手动配置与高级字段", link: "/guide/manual-configuration" },
-            { text: "部署博客与后台", link: "/guide/deployment" },
             { text: "常见问题", link: "/guide/troubleshooting" },
+          ],
+        },
+        {
+          text: "快速开始",
+          items: [
+            { text: "部署前端", link: "/guide/deploy-blog" },
+            { text: "部署后台", link: "/guide/deploy-admin" },
           ],
         },
       ],

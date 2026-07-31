@@ -13,9 +13,28 @@ pageClass: cyrene-home
     <h1><span>从后台入口开始</span><span>配置你的博客</span></h1>
     <p class="cyrene-hero-copy">这份文档按 Cyrene 管理后台的真实导航组织。优先告诉你从哪里进入、应该填写什么；需要手动调整时，再补充配置对象与参数含义。</p>
     <div class="cyrene-actions">
-      <a class="cyrene-action cyrene-action-primary" href="/guide/admin-overview">认识管理后台</a>
-      <a class="cyrene-action" href="/guide/getting-started">快速开始</a>
+      <a class="cyrene-action cyrene-action-primary" href="/guide/deploy-blog">快速开始</a>
+      <a class="cyrene-action" href="/guide/admin-overview">认识管理后台</a>
     </div>
+  </div>
+</section>
+
+<section class="cyrene-section">
+  <div class="cyrene-section-head">
+    <h2>快速开始</h2>
+    <p>先一键部署博客前端，需要可视化管理时再部署后台。两个部署单元彼此独立。</p>
+  </div>
+  <div class="cyrene-grid">
+    <a class="cyrene-entry" href="/guide/deploy-blog">
+      <small>STEP 01</small>
+      <strong>部署前端</strong>
+      <span>通过 Vercel 一键创建自己的仓库并上线博客。</span>
+    </a>
+    <a class="cyrene-entry" href="/guide/deploy-admin">
+      <small>STEP 02 · OPTIONAL</small>
+      <strong>部署后台</strong>
+      <span>配置最小权限后，通过 GitHub Actions 部署管理后台。</span>
+    </a>
   </div>
 </section>
 
