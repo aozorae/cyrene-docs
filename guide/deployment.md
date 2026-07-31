@@ -53,7 +53,34 @@ Netlify、Cloudflare Pages 和其他支持 Astro 的平台使用相同核心设�
 
 ## 部署管理后台
 
-管理后台通过 GitHub Actions 部署到 Cloudflare Workers。正式部署流程会自动：
+管理后台通过 GitHub Actions 部署到 Cloudflare Workers。第一次部署时，不需要在本地安装 Wrangler，也不需要手动创建 Worker 或 D1。
+
+### 最少需要填写什么
+
+> 最少配置是 **5 个 Repository Secrets，0 个 Repository Variables**。
+
+GitHub 的设置页同时提供 `Secrets` 和 `Variables`。下面 5 项必须全部添加到 **Repository secrets**，即使账户 ID 本身不属于密码，也不要放到 Variables。工作流会在部署开始前逐项检查，缺少任何一项都会停止。
+
+| Repository Secret | 填写内容 | 最小权限或要求 |
+| --- | --- | --- |
+| `CLOUDFLARE_ACCOUNT_ID` | 要部署到的 Cloudflare 账户 ID | 从目标 Cloudflare 账户的概览页复制 |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare 自定义 API Token | 目标账户的 `Workers Scripts: Edit` 和 `D1: Edit`；不需要使用 Global API Key |
+| `BLOG_GITHUB_PAT` | 后台长期读写博客仓库使用的 GitHub PAT | 建议使用 fine-grained token，只选择目标仓库，并授予 `Contents: Read and write` |
+| `ADMIN_PASSWORD` | 登录管理后台使用的密码 | 使用独立的高强度密码，不要与其他网站共用 |
+| `SESSION_SECRET` | 登录会话的签名密钥 | 使用与管理密码不同的长随机值，建议至少 32 个随机字符 |
+
+当前部署不使用 R2 或 KV，因此不需要填写相关密钥、存储桶或命名空间。
+
+### 最快部署步骤
+
+1. 打开博客仓库的 `Settings → Secrets and variables → Actions`。
+2. 停留在 `Secrets` 页签，点击 `New repository secret`，依次添加上面的 5 项。
+3. 打开仓库的 `Actions`，选择 `Deploy Admin Worker`。
+4. 点击 `Run workflow`，选择默认分支，再确认运行。
+5. 等待工作流全部变绿；在 `Create or update Worker` 步骤的输出中可以找到部署后的 `workers.dev` 地址。
+6. 打开后台地址，使用 `ADMIN_PASSWORD` 登录，并在首次设置中填写要管理的仓库所有者、仓库名称和发布分支。
+
+这就是首次部署的最短路径。工作流会自动完成：
 
 1. 安装后台依赖并同步 Vditor 静态资源。
 2. 检查 Worker 类型。
@@ -62,37 +89,28 @@ Netlify、Cloudflare Pages 和其他支持 Astro 的平台使用相同核心设�
 5. 创建或更新 Worker。
 6. 通过 Wrangler secrets 注入 GitHub Token、管理密码和会话签名密钥。
 
-### 必需的 GitHub Secrets
-
-| Secret | 用途 |
-| --- | --- |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 账户标识 |
-| `CLOUDFLARE_API_TOKEN` | 创建和更新 Worker、D1 的 API 令牌 |
-| `BLOG_GITHUB_PAT` | 后台读写目标博客仓库 |
-| `ADMIN_PASSWORD` | 单管理员登录密码 |
-| `SESSION_SECRET` | 会话签名密钥，应与登录密码不同 |
-
-GitHub PAT 应只授予目标仓库所需的最小内容读写权限。Cloudflare API Token 也应限制在必要账户和资源范围内。
-
-### 可选仓库变量
+### 两个可选 Variables
 
 - `ADMIN_WORKER_NAME`：自定义 Worker 名称。
 - `ADMIN_D1_NAME`：自定义 D1 数据库名称。
 
-未设置时，部署流程会根据仓库名生成稳定名称。后续部署会复用同名资源，不会重复创建。
+它们位于同一设置页的 `Variables` 页签，但都可以留空。未设置时，工作流会根据仓库名生成稳定名称：Worker 为 `<仓库名>-admin`，D1 为 `<仓库名>-admin-db`。后续部署会复用同名资源，不会重复创建。
 
-### 首次运行
+除非账户中已经存在同名资源，或确实需要自定义名称，否则不要填写这两个 Variables，最省步骤也最不容易填错。
 
-1. 配置所有 Secrets。
-2. 在 GitHub Actions 中手动运行“Deploy Admin Worker”。
-3. 打开部署得到的 Worker 地址。
-4. 使用管理密码登录。
-5. 在首次设置中填写仓库所有者、仓库名称和发布分支。
-6. 验证连接后检查仪表盘数据。
+### 失败时先看这里
+
+| Action 提示或失败步骤 | 优先检查 |
+| --- | --- |
+| `Missing required repository secret` | 5 个值是否全部建在 `Secrets` 页签，名称是否完全一致，值是否为空 |
+| D1 列表、创建或迁移失败 | `CLOUDFLARE_ACCOUNT_ID` 是否属于目标账户，API Token 是否拥有目标账户的 `D1: Edit` |
+| Worker 部署或 `secret put` 失败 | API Token 是否拥有目标账户的 `Workers Scripts: Edit` |
+| 后台首次设置无法连接 GitHub | PAT 是否选择了正确仓库，并拥有 `Contents: Read and write` |
+| 推送代码后没有自动部署 | 是否推送到了默认分支，以及变更是否位于 `admin/**` 或后台部署工作流中 |
 
 ### 自动部署范围
 
-后台代码或后台部署工作流发生变更时，会触发 Worker 部署。文章、动态和博客配置的提交只需要触发博客静态托管平台，不应重复部署后台。
+手动运行 Action 时，工作流会直接部署所选分支；首次部署建议始终选择默认分支。之后，只有默认分支中的后台代码或后台部署工作流发生变更时，才会自动触发 Worker 部署。文章、动态和博客配置的提交只需要触发博客静态托管平台，不应重复部署后台。
 
 ## 生产安全
 
@@ -101,4 +119,3 @@ GitHub PAT 应只授予目标仓库所需的最小内容读写权限。Cloudflar
 - 删除 Worker、D1、生产数据或重置数据库前先确认影响。
 - 定期审查 GitHub PAT 和 Cloudflare Token 权限。
 - 不把后台域名当作公开 API 提供给第三方前端。
-
